@@ -1,6 +1,9 @@
 from collections import defaultdict
-from dataclasses import dataclass
 from itertools import combinations
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from lib.geometry import Vector, Point
 
 def parse_input(filepath: str) -> list[list[str]]:
     result = []
@@ -8,28 +11,6 @@ def parse_input(filepath: str) -> list[list[str]]:
         for line in file:
             result.append(list(line.rstrip('\n')))
     return result
-
-@dataclass
-class Vector:
-    dx: int
-    dy: int
-
-@dataclass
-class Point:
-    x: int
-    y: int
-
-    def __hash__(self) -> int:
-        return hash((self.x, self.y))
-
-    def __sub__(self, other: 'Point') -> Vector:
-        return Vector(dx=self.x-other.x, dy=self.y-other.y)
-    
-    def __add__(self, other) -> 'Point':
-        if isinstance(other, Vector):
-            return Point(x=self.x + other.dx, y=self.y + other.dy)
-        raise NotImplementedError(f"add not supported between Point and {type(other).__name__}")
-
 
 def compute_freq_loc(grid: list[list[str]]) -> dict[list[Point]]:
     result = defaultdict(list)
