@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from lib.geometry import Point, Vector
+from lib.geometry import Point, Vector, CARDINAL_DIRECTIONS
 
 def parse_input(filepath: str) -> list[list[int]]:
     result = []
@@ -17,12 +17,7 @@ class Solver:
         self.n = len(grid[0])
         self.memo_scores = dict()
         self.memo_rating = dict()
-        self.directions = [
-            Vector(0, 1),
-            Vector(0, -1),
-            Vector(1, 0),
-            Vector(-1, 0),
-        ]
+        self.directions = CARDINAL_DIRECTIONS
 
     def compute_scores(self) -> int:
         total_score = 0

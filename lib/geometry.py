@@ -1,9 +1,13 @@
 from dataclasses import dataclass
+from typing import Any
 
 @dataclass
 class Vector:
     dx: int
     dy: int
+
+    def __eq__(self, other: 'Vector') -> bool:
+        return self.dx == other.dx and self.dy == other.dy
 
 @dataclass
 class Point:
@@ -23,3 +27,23 @@ class Point:
     
     def __str__(self) -> str:
         return f"({self.x},{self.y})"
+    
+    
+CARDINAL_DIRECTIONS = [
+    Vector(-1, 0),
+    Vector(0, 1),
+    Vector(1, 0),
+    Vector(0, -1),
+]
+
+def get_next_cardinal_point(point: Point):
+    for dir in CARDINAL_DIRECTIONS:
+        next_point = point + dir
+        yield next_point
+
+def in_bounds(grid: list[list[Any]], point: Point) -> bool:
+    m = len(grid)
+    if m == 0:
+        return False
+    n = len(grid[0])
+    return 0 <= point.x < m and 0 <= point.y < n
