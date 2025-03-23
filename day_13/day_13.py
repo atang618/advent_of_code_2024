@@ -15,7 +15,7 @@ class ClawMachine:
     b: Vector = field(default_factory=Vector)
     prize: Point = field(default_factory=Point)
 
-def parse_input(filepath: str) -> list[ClawMachine]:
+def parse_input(filepath: str, offset: int = 0) -> list[ClawMachine]:
     machines = []
     with open(filepath, 'r') as file:
         lines = file.readlines()
@@ -30,7 +30,7 @@ def parse_input(filepath: str) -> list[ClawMachine]:
             # assumes X+,Y+ for buttons, and X=,Y= for prize
             a = Vector(int(a_coords[0][2:]), int(a_coords[1][2:]))
             b = Vector(int(b_coords[0][2:]), int(b_coords[1][2:]))
-            prize = Point(int(prize_coords[0][2:]), int(prize_coords[1][2:]))
+            prize = Point(int(prize_coords[0][2:]) + offset, int(prize_coords[1][2:]) + offset)
 
             machines.append(ClawMachine(a, b, prize))
         return machines
@@ -52,16 +52,44 @@ def compute_min_cost(loc: Point, machine: ClawMachine, tokens_used: int, memo: d
     memo[((loc, tokens_used))] = min_cost
     return min_cost
 
+def linear_solve(machine: ClawMachine) -> int:
+    """
+    2 equations, 2 unknowns:
+    a * x_a + b * x_b = x_p
+    a * y_a + b * y_b = y_p
+
+    a = (x_p - b * x_b) / x_a
+    b = (y_p * x_a - x_p * y_a) / (y_p * x_a - x_b * y_a)
+    """
+    x_a, y_a = machine.a.dx, machine.a.dy
+    x_b, y_b = machine.b.dx, machine.b.dy
+    x_p, y_p = machine.prize.x, machine.prize.y
+    b = (y_p * x_a - x_p * y_a) / (y_b * x_a - x_b * y_a)
+    if not b.is_integer():
+        return float('inf')
+    b = int(b)
+    a = (x_p - b * x_b) / x_a
+    if not a.is_integer():
+        return float('inf')
+    a = int(a)
+    return a * TOKEN_COST['a'] + b * TOKEN_COST['b']
+
+
 def compute_all_prizes(machines: list[ClawMachine]) -> int:
     total_cost = 0
     for machine in machines:
-        cost = compute_min_cost(Point(0,0), machine, 0, dict())
+        cost = linear_solve(machine)
         if cost != float('inf'):
             total_cost += cost
 
     return total_cost
 
 if __name__ == '__main__':
-    machines = parse_input('day_13/input.txt')
+    filepath = 'day_13/input.txt'
+    machines = parse_input(filepath)
     cost = compute_all_prizes(machines)
     print(f'Cost to win: {cost}')
+    offset = 10000000000000
+    machines = parse_input(filepath, offset)
+    cost = compute_all_prizes(machines)
+    print(f'Cost to win with offset {cost}')
